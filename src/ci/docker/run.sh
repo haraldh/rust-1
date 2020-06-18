@@ -118,7 +118,7 @@ if [ "$SCCACHE_BUCKET" != "" ]; then
     args="$args --env AWS_SECRET_ACCESS_KEY"
 else
     mkdir -p $HOME/.cache/sccache
-    args="$args --env SCCACHE_DIR=/sccache --volume $HOME/.cache/sccache:/sccache"
+    args="$args --env SCCACHE_DIR=/sccache --volume $HOME/.cache/sccache:/sccache:z"
 fi
 
 # Run containers as privileged as it should give them access to some more
@@ -153,14 +153,16 @@ args="$args --privileged"
 if [ -f /.dockerenv ]; then
   docker create -v /checkout --name checkout alpine:3.4 /bin/true
   docker cp . checkout:/checkout
-  args="$args --volumes-from checkout"
+  args="$args --volumes-from checkout:z"
 else
-  args="$args --volume $root_dir:/checkout:ro"
-  args="$args --volume $objdir:/checkout/obj"
-  args="$args --volume $HOME/.cargo:/cargo"
-  args="$args --volume $HOME/rustsrc:$HOME/rustsrc"
-  args="$args --volume /tmp/toolstate:/tmp/toolstate"
+  args="$args --volume $root_dir:/checkout:ro,z"
+  args="$args --volume $objdir:/checkout/obj:rw,z"
+  args="$args --volume $HOME/.cargo:/cargo:z"
+  args="$args --volume $HOME/rustsrc:$HOME/rustsrc:z"
+  args="$args --volume /tmp/toolstate:/tmp/toolstate:z"
   args="$args --env LOCAL_USER_ID=`id -u`"
+  args="$args --env NO_CHANGE_USER=y"
+  args="$args --userns=keep-id"
 fi
 
 docker \

@@ -48,4 +48,6 @@ ENV CFLAGS_x86_64_unknown_linux_musl="-Wa,-mrelax-relocations=no -Wa,--compress-
     -Wl,--compress-debug-sections=none"
 
 # To run native tests replace `dist` below with `test`
-ENV SCRIPT python3 ../x.py dist --build $HOSTS
+ENV SCRIPT \
+      python3 ../x.py test --build $HOSTS && \
+      python3 ../x.py dist --build $HOSTS
